@@ -1,6 +1,7 @@
 FROM php:7.4-fpm-alpine
-
-#RUN apk add --update \
+RUN apk add nano
+RUN apk add vim
+RUN apk add git
 RUN apk add git
 RUN apk add curl
 RUN apk add curl-dev
@@ -9,8 +10,6 @@ RUN apk add bash-completion
 RUN apk add oniguruma-dev
 RUN apk add libzip-dev
 RUN apk add freetype-dev
-RUN apk add icu
-RUN apk add icu-dev
 RUN apk add libxml2-dev
 RUN apk add libintl
 RUN apk add libjpeg-turbo-dev
@@ -18,10 +17,19 @@ RUN apk add libpng-dev
 RUN apk add mysql-client
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-configure bcmath
-RUN docker-php-ext-install soap zip curl bcmath exif gd iconv intl mbstring opcache pdo_mysql
-RUN apk del icu-dev gcc g++
-RUN apk add --no-cache tzdata
-RUN set -ex
+RUN docker-php-ext-install soap
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install curl
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install gd
+RUN docker-php-ext-install iconv
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install opcache
+RUN docker-php-ext-install pdo_mysql
+#RUN set -ex
+#RUN apk add nodejs npm
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer && chmod +x /usr/bin/composer
 
 #RUN apk add --update $PHPIZE_DEPS freetype-dev git libjpeg-turbo-dev libpng-dev libxml2-dev \
 #		libzip-dev openssh-client php7-json php7-openssl php7-pdo php7-pdo_mysql php7-session php7-simplexml php7-tokenizer \
@@ -45,7 +53,6 @@ RUN set -ex
 #	&& php -r "unlink('composer-setup.php');" \
 #	&& mv composer.phar /usr/bin/composer
 
-RUN apk add --update nodejs npm nano vim
 
 #RUN #sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \
 ##    -t https://github.com/denysdovhan/spaceship-prompt \
