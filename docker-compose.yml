@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+
+  nginx:
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: ./docker/nginx.dockerfile
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - xnet
+
+  php:
+    container_name: php
+    build:
+      context: .
+      dockerfile: ./docker/php.dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - 9000:9000
+      - 6001:6001
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - xnet
+
+  mysql:
+    container_name: mysql
+    build:
+      context: .
+      dockerfile: ./docker/mysql.dockerfile
+    restart: unless-stopped
+    working_dir: /var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_HOST: 0.0.0.0
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+    networks:
+      - xnet
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    build:
+      context: .
+      dockerfile: ./docker/phpmyadmin.dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/html
+    links:
+      - mysql
+    ports:
+      - 81:80
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 1G
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+    networks:
+      - xnet
+
+  redis:
+    container_name: redis
+    build:
+      context: .
+      dockerfile: ./docker/redis.dockerfile
+    restart: unless-stopped
+    command: redis-server --save 20 1 --loglevel warning
+    ports:
+      - 6379:6379
+    volumes:
+      - ./docker/redis:/data
+    networks:
+      - xnet
+
+  node:
+    container_name: node
+    build:
+      context: .
+      dockerfile: ./docker/node.dockerfile
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - ./src:/usr/src/app
+    stdin_open: true
+    tty: true
+    networks:
+      - xnet
+
+  rust:
+    container_name: rust
+    build:
+      context: .
+      dockerfile: ./docker/rust.dockerfile
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      - ./src:/usr/src/app
+    stdin_open: true
+    tty: true
+    networks:
+      - xnet
+
+networks:
+  xnet:
+    driver: bridge
+
